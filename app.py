@@ -208,21 +208,21 @@ def process_products():
       "title": "Black Women Leather Biker Jacket",
       "desc": "Get edgy with our black women leather biker jacket. Featuring lapel collar, belt, and premium leather, perfect for a chic, mysterious look.Embrace the biker chic with our stunning black women leather biker jacket. Crafted from high-quality leather, this stylish design boasts: Lapel collar for added",
       "link": "https://www.myntra.com/31014584",
-      "video_url": "https://storage.googleapis.com/testing002-fashion/Black_Women_Leather_Biker_Jacket.mp4
+      "video_url": "https://storage.googleapis.com/testing002-fashion/Black_Women_Leather_Biker_Jacket.mp4"
     },
     {
       "product_id": "27205110",
       "title": "Sharvari's Look",
       "desc": "Shop Sharvari's look.",
       "link": "https://www.myntra.com/27205110",
-      "video_url": "https://storage.googleapis.com/testing002-fashion/sharvari_look.mp4
+      "video_url": "https://storage.googleapis.com/testing002-fashion/sharvari_look.mp4"
     },
     {
       "product_id": "19482596",
       "title": "Sakhi - Bridesmaid Collection",
       "desc": "With the wedding season around the corner, we bring to you \"Sakhi\" - the ultimate destination to all your bridesmaid fashion needs.",
       "link": "https://www.myntra.com/19482596",
-      "video_url": "https://storage.googleapis.com/testing002-fashion/Sakhi_Bridesmaid_Collection.mp4”
+      "video_url": "https://storage.googleapis.com/testing002-fashion/Sakhi_Bridesmaid_Collection.mp4"
     }
   ]
 }
