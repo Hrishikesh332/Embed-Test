@@ -36,7 +36,7 @@ connections.connect(
 # Define fields for schema
 fields = [
     FieldSchema(name="id", dtype=DataType.INT64, is_primary=True, auto_id=False),
-    FieldSchema(name="vector", dtype=DataType.FLOAT_VECTOR, dim=1024),
+    FieldSchema(name="vector", dtype=DataType.FLOAT_VECTOR, dim=4096),  # Set dimension to 4096
 ]
 
 # Create schema with dynamic fields for metadata
@@ -74,7 +74,7 @@ collection.load()
 milvus_client = collection
 
 st.write(f"Collection '{COLLECTION_NAME}' created successfully")
-st.write("Hello!")
+st.write("Hello")
 
 def generate_embedding(product_info):
     """Generate embeddings for product title and description"""
@@ -87,17 +87,17 @@ def generate_embedding(product_info):
         title_embedding = twelvelabs_client.embed.create(
             engine_name="Marengo-retrieval-2.6",
             text=product_info['title']
-        )
+        ).embeddings  # Get the embeddings attribute
 
         # Create embedding for description  
         desc_embedding = twelvelabs_client.embed.create(
             engine_name="Marengo-retrieval-2.6",
             text=product_info['desc']
-        )
+        ).embeddings  # Get the embeddings attribute
 
         embeddings = [{
-            'title_embedding': title_embedding.vector,
-            'desc_embedding': desc_embedding.vector,
+            'title_embedding': title_embedding,
+            'desc_embedding': desc_embedding,
             'video_url': product_info['video_url'],
             'product_id': product_info['product_id'],
             'title': product_info['title'],
