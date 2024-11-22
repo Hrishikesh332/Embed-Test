@@ -73,98 +73,41 @@ collection.load()
 # Set the milvus_client to the collection
 milvus_client = collection
 
-# st.write(f"Connected to collection: {COLLECTION_NAME}")
-
-
-# # Initialize Milvus client
-# milvus_client = MilvusClient(
-#     uri=URL,
-#     token=TOKEN
-# )
-
-# collection_name = COLLECTION_NAME
-
-# # Check if collection exists and drop if necessary
-# if milvus_client.has_collection(collection_name):
-#     milvus_client.drop_collection(collection_name)
-
-# # Create collection with proper schema
-# milvus_client.create_collection(
-#     collection_name=collection_name,
-#     dimension=1024,
-#     vector_field_name="vector",
-#     enable_dynamic_field=True
-# )
-
-# # Create index
-# milvus_client.create_index(
-#     collection_name=collection_name,
-#     field_name="vector",
-#     index_params={
-#         "metric_type": "COSINE",
-#         "index_type": "IVF_FLAT",
-#         "params": {"nlist": 128}
-#     }
-# )
-
-# # Load collection
-# milvus_client.load_collection(collection_name)
-
 st.write(f"Collection '{COLLECTION_NAME}' created successfully")
 st.write("Hello")
 
-
-
-# Add these functions after your existing imports and setup code
-
-def generate_embedding(video_url, product_info):
-    """Generate embeddings for a video URL with associated product information"""
+def generate_embedding(product_info):
+    """Generate embeddings for product title and description"""
     try:
-        st.write(f"Processing video for product: {product_info['title']}")
-        st.write(f"Video URL: {video_url}")
-
+        st.write(f"Processing product: {product_info['title']}")
+        
         twelvelabs_client = TwelveLabs(api_key=TWELVELABS_API_KEY)
-
-        task = twelvelabs_client.embed.task.create(
+        
+        # Create embedding for title
+        title_embedding = twelvelabs_client.embed.create(
             engine_name="Marengo-retrieval-2.6",
-            video_url=video_url
+            text=product_info['title']
         )
 
-        # Create a progress bar
-        progress_bar = st.progress(0)
-        status_text = st.empty()
-
-        def on_task_update(task):
-            status_text.write(f"Status: {task.status}")
-            if task.status == "completed":
-                progress_bar.progress(100)
-            elif task.status == "processing":
-                progress_bar.progress(50)
-
-        status = task.wait_for_done(
-            sleep_interval=2,
-            callback=on_task_update
+        # Create embedding for description  
+        desc_embedding = twelvelabs_client.embed.create(
+            engine_name="Marengo-retrieval-2.6",
+            text=product_info['desc']
         )
 
-        task_result = twelvelabs_client.embed.task.retrieve(task.id)
+        embeddings = [{
+            'title_embedding': title_embedding.vector,
+            'desc_embedding': desc_embedding.vector,
+            'video_url': product_info['video_url'],
+            'product_id': product_info['product_id'],
+            'title': product_info['title'],
+            'description': product_info['desc'],
+            'link': product_info['link']
+        }]
 
-        embeddings = []
-        for segment in task_result.video_embedding.segments:
-            embeddings.append({
-                'embedding': segment.embeddings_float,
-                'start_offset_sec': segment.start_offset_sec,
-                'end_offset_sec': segment.end_offset_sec,
-                'embedding_scope': segment.embedding_scope,
-                'video_url': video_url,
-                'product_id': product_info['product_id'],
-                'title': product_info['title'],
-                'description': product_info['desc'],
-                'link': product_info['link']
-            })
-
-        return embeddings, task_result, None
+        return embeddings, None
     except Exception as e:
-        return None, None, str(e)
+        return None, str(e)
 
 def insert_embeddings(collection, embeddings):
     """Insert embeddings into Milvus collection"""
@@ -173,11 +116,9 @@ def insert_embeddings(collection, embeddings):
         for i, emb in enumerate(embeddings):
             data.append({
                 "id": int(uuid.uuid4().int & (1<<63)-1),  # Generate unique ID
-                "vector": emb['embedding'],
+                "vector": emb['title_embedding'],
                 "metadata": {
-                    "scope": emb['embedding_scope'],
-                    "start_time": emb['start_offset_sec'],
-                    "end_time": emb['end_offset_sec'],
+                    "desc_embedding": emb['desc_embedding'],
                     "video_url": emb['video_url'],
                     "product_id": emb['product_id'],
                     "title": emb['title'],
@@ -240,18 +181,15 @@ def process_products():
             
             try:
                 # Generate embeddings
-                embeddings, task_result, error = generate_embedding(
-                    product['video_url'],
-                    product
-                )
+                embeddings, error = generate_embedding(product)
 
                 if error:
-                    st.error(f"Error processing video: {error}")
+                    st.error(f"Error processing product: {error}")
                     continue
 
                 if embeddings:
                     all_embeddings.extend(embeddings)
-                    st.success(f"Successfully generated {len(embeddings)} embeddings")
+                    st.success(f"Successfully generated embeddings")
 
                     # Insert embeddings into Milvus
                     insert_result = insert_embeddings(
@@ -266,21 +204,16 @@ def process_products():
 
                     # Display sample embeddings
                     with st.expander("View sample embeddings"):
-                        for i, emb in enumerate(embeddings[:2]):
+                        for i, emb in enumerate(embeddings):
                             st.write(f"\nEmbedding {i+1}:")
                             st.write(f"  Product: {emb['title']}")
                             st.write(f"  Product ID: {emb['product_id']}")
                             st.write(f"  Link: {emb['link']}")
-                            st.write(f"  Time range: {emb['start_offset_sec']} - {emb['end_offset_sec']} seconds")
-                            st.write(f"  Embedding vector (first 5 values): {emb['embedding'][:5]}")
+                            st.write(f"  Title Embedding vector (first 5 values): {emb['title_embedding'][:5]}")
+                            st.write(f"  Desc Embedding vector (first 5 values): {emb['desc_embedding'][:5]}")
 
             except Exception as e:
                 st.error(f"Error with product {idx}: {str(e)}")
-
-            # Add delay between videos
-            if idx < total_products:
-                with st.spinner('Waiting before processing next video...'):
-                    time.sleep(5)
 
     # Final summary
     st.write("\n=== Final Summary ===")
@@ -289,7 +222,7 @@ def process_products():
     return all_embeddings
 
 # Add this to your Streamlit UI
-st.title("Video Embedding Processor")
+st.title("Product Embedding Processor")
 
 if st.button("Process All Products"):
     with st.spinner('Processing products...'):
