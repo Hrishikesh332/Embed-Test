@@ -93,7 +93,7 @@ def generate_embedding(product_info):
         ).text_embedding  # Get the embeddings_float attribute
         st.write(embedding)
         embeddings = [{
-            'embedding': embedding.segments.embedding_float,
+            'embedding': embedding.segments[0].embeddings_float,
             'video_url': product_info['video_url'],
             'product_id': product_info['product_id'],
             'title': product_info['title'],
