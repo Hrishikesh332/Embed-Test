@@ -36,7 +36,7 @@ connections.connect(
 # Define fields for schema
 fields = [
     FieldSchema(name="id", dtype=DataType.INT64, is_primary=True, auto_id=False),
-    FieldSchema(name="vector", dtype=DataType.FLOAT_VECTOR, dim=1024),
+    FieldSchema(name="vector", dtype=DataType.FLOAT_VECTOR, dim=1536),
 ]
 
 # Create schema with dynamic fields for metadata
