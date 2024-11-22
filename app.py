@@ -36,7 +36,7 @@ connections.connect(
 # Define fields for schema
 fields = [
     FieldSchema(name="id", dtype=DataType.INT64, is_primary=True, auto_id=False),
-    FieldSchema(name="vector", dtype=DataType.FLOAT_VECTOR, dim=4096),  # Set dimension to 4096
+    FieldSchema(name="vector", dtype=DataType.FLOAT_VECTOR, dim=4096),
 ]
 
 # Create schema with dynamic fields for metadata
@@ -90,7 +90,7 @@ def generate_embedding(product_info):
         embedding = twelvelabs_client.embed.create(
             engine_name="Marengo-retrieval-2.6",
             text=text
-        ).vector  # Get the vector attribute
+        ).embeddings_float  # Get the embeddings_float attribute
 
         embeddings = [{
             'embedding': embedding,
