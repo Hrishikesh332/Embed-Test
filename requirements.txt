@@ -5,5 +5,3 @@ pymilvus
 milvus
 twelvelabs
 python-dotenv
-torch
-torchvision
