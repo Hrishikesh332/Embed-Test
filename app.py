@@ -83,21 +83,17 @@ def generate_embedding(product_info):
         
         twelvelabs_client = TwelveLabs(api_key=TWELVELABS_API_KEY)
         
-        # Create embedding for title
-        title_embedding = twelvelabs_client.embed.create(
+        # Combine title and description
+        text = f"{product_info['title']} {product_info['desc']}"
+        
+        # Create embedding for the combined text
+        embedding = twelvelabs_client.embed.create(
             engine_name="Marengo-retrieval-2.6",
-            text=product_info['title']
-        ).embeddings  # Get the embeddings attribute
-
-        # Create embedding for description  
-        desc_embedding = twelvelabs_client.embed.create(
-            engine_name="Marengo-retrieval-2.6",
-            text=product_info['desc']
-        ).embeddings  # Get the embeddings attribute
+            text=text
+        ).vector  # Get the vector attribute
 
         embeddings = [{
-            'title_embedding': title_embedding,
-            'desc_embedding': desc_embedding,
+            'embedding': embedding,
             'video_url': product_info['video_url'],
             'product_id': product_info['product_id'],
             'title': product_info['title'],
@@ -116,9 +112,8 @@ def insert_embeddings(collection, embeddings):
         for i, emb in enumerate(embeddings):
             data.append({
                 "id": int(uuid.uuid4().int & (1<<63)-1),  # Generate unique ID
-                "vector": emb['title_embedding'],
+                "vector": emb['embedding'],
                 "metadata": {
-                    "desc_embedding": emb['desc_embedding'],
                     "video_url": emb['video_url'],
                     "product_id": emb['product_id'],
                     "title": emb['title'],
@@ -209,8 +204,7 @@ def process_products():
                             st.write(f"  Product: {emb['title']}")
                             st.write(f"  Product ID: {emb['product_id']}")
                             st.write(f"  Link: {emb['link']}")
-                            st.write(f"  Title Embedding vector (first 5 values): {emb['title_embedding'][:5]}")
-                            st.write(f"  Desc Embedding vector (first 5 values): {emb['desc_embedding'][:5]}")
+                            st.write(f"  Embedding vector (first 5 values): {emb['embedding'][:5]}")
 
             except Exception as e:
                 st.error(f"Error with product {idx}: {str(e)}")
