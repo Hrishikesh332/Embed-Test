@@ -36,7 +36,7 @@ connections.connect(
 # Define fields for schema
 fields = [
     FieldSchema(name="id", dtype=DataType.INT64, is_primary=True, auto_id=False),
-    FieldSchema(name="vector", dtype=DataType.FLOAT_VECTOR, dim=1024),
+    FieldSchema(name="vector", dtype=DataType.FLOAT_VECTOR, dim=4096),
 ]
 
 # Create schema with dynamic fields for metadata
@@ -93,7 +93,7 @@ def generate_embedding(product_info):
         ).text_embedding  # Get the embeddings_float attribute
         st.write(embedding)
         embeddings = [{
-            'embedding': embedding,
+            'embedding': embedding.segments.embedding_float,
             'video_url': product_info['video_url'],
             'product_id': product_info['product_id'],
             'title': product_info['title'],
