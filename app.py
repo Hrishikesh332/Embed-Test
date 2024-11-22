@@ -90,8 +90,8 @@ def generate_embedding(product_info):
         embedding = twelvelabs_client.embed.create(
             engine_name="Marengo-retrieval-2.6",
             text=text
-        ).embeddings_float  # Get the embeddings_float attribute
-
+        ).text_embedding  # Get the embeddings_float attribute
+        st.write(embedding)
         embeddings = [{
             'embedding': embedding,
             'video_url': product_info['video_url'],
