@@ -74,7 +74,7 @@ collection.load()
 milvus_client = collection
 
 st.write(f"Collection '{COLLECTION_NAME}' created successfully")
-st.write("Hello")
+st.write("Hello!")
 
 def generate_embedding(product_info):
     """Generate embeddings for product title and description"""
